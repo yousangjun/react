@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.demo.product.mapper.ProductMapper">
+
+    <resultMap id="productResultMap" type="Product">
+        <id property="no" column="no" />
+        <result property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="price" column="price" />
+        <result property="img" column="img" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <insert id="insert" parameterType="Product" useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO product (name, price, img)
+        VALUES (#{name}, #{price}, #{img})
+    </insert>
+
+    <select id="selectProductId" parameterType="int" resultMap="productResultMap">
+        SELECT * FROM product WHERE no = #{no}
+    </select>
+
+    <select id="selectAllProducts" resultMap="productResultMap">
+        SELECT * FROM product
+    </select>
+
+    <update id="updateProduct" parameterType="Product">
+        UPDATE product SET name = #{name}, price = #{price}, img = #{img}, updated_at = CURRENT_TIMESTAMP
+        WHERE no = #{no}
+    </update>
+
+    <delete id="deleteProduct" parameterType="int">
+        DELETE FROM product WHERE no = #{no}
+    </delete>
+</mapper>
