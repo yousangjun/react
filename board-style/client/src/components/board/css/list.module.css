@@ -1,0 +1,36 @@
+.table {
+    width: 100%;
+    background-color: collapse;
+    margin: 10px auto;
+}
+
+.table th,
+.table td {
+    border: 1px solid black;
+    padding: 8px;
+}
+
+.table th {
+    background-color: black;
+    color: white;
+}
+
+.table th:nth-child(1),
+.table th:nth-child(1) {
+    width: 10%;
+}
+
+.table th:nth-child(2),
+.table th:nth-child(2) {    
+    width: 50%;
+}
+
+.table th:nth-child(3),
+.table th:nth-child(3) {
+    width: 20%;
+}
+
+.table th:nth-child(4),
+.table th:nth-child(4) {
+    width: 20%;
+}
