@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styles from '../board/css/insert.module.css'
+// ckeditor5
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import * as filesApi from '../../apis/files'
 
 const InsertForm = ({ onInsert }) => {
 
@@ -25,7 +29,7 @@ const InsertForm = ({ onInsert }) => {
     setFiles(e.target.files)
   }
 
-  const onSubmit = () => {   
+  const onSubmit = () => {
     // 유효성 검사 ✅
     // ...
 
@@ -36,20 +40,58 @@ const InsertForm = ({ onInsert }) => {
     formData.append('writer', writer)
     formData.append('content', content)
 
-    if(files) {
-      for ( let i = 0; i< files.length; i++){
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        formData.append('files',file)
+        formData.append('files', file)
       }
     }
 
     const headers = {
-      'Content-Type' : 'multipart/form-data'
+      'Content-Type': 'multipart/form-data'
     }
 
     // onInsert(title,writer,content)   // json
     onInsert(formData, headers)         // formData
   }
+
+  function uploadPlugin(editor) {
+    editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+      return customUploadAdapter(loader);
+    };
+  }
+
+  const customUploadAdapter = (loader) => {
+    return {
+      upload() {
+        return new Promise((resolve, reject) => {
+          const formData = new FormData();
+          loader.file.then(async (file) => {
+            console.log(file);
+            formData.append("parentTable", 'editor');
+            formData.append("file", file);
+
+            const headers = {
+                'Content-Type': 'multipart/form-data'
+            };
+
+            let response = await filesApi.upload(formData, headers);
+            let data = await response.data;
+            console.log(`data : ${data}`);
+
+            let newFile = data;
+            let newFileNo = newFile.no
+
+            // 이미지 렌더링
+            await resolve({
+              default: `http://localhost:8080/files/img/${newFileNo}`
+            })
+
+          });
+        });
+      },
+    };
+  };
 
   return (
     <div className='container'>
@@ -64,19 +106,19 @@ const InsertForm = ({ onInsert }) => {
                 // 카멜 케이스 : styles.formInput
                 // 케밥 케이스 : styles['form-input']
               }
-              <input type="text" 
-                     value={title}
-                     className={styles['form-input']}
-                     onChange={handleChangeTitle}/>
+              <input type="text"
+                value={title}
+                className={styles['form-input']}
+                onChange={handleChangeTitle} />
             </td>
           </tr>
           <tr>
             <td>작성자</td>
             <td>
-              <input type="text" 
-                      value={writer}
-                      className={styles['form-input']}
-                      onChange={handleChangeWriter}/>
+              <input type="text"
+                value={writer}
+                className={styles['form-input']}
+                onChange={handleChangeWriter} />
             </td>
           </tr>
           <tr>
@@ -84,23 +126,65 @@ const InsertForm = ({ onInsert }) => {
           </tr>
           <tr>
             <td colSpan={2}>
-              <textarea cols="40" rows="10"
+              <CKEditor
+                editor={ClassicEditor}
+                config={{
+                  placeholder: "내용을 입력하세요.",
+                  toolbar: {
+                    items: [
+                      'undo', 'redo',
+                      '|', 'heading',
+                      '|', 'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
+                      '|', 'bold', 'italic', 'strikethrough', 'subscript', 'superscript', 'code',
+                      '|', 'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent',
+                      '|', 'link', 'uploadImage', 'blockQuote', 'codeBlock',
+                      '|', 'mediaEmbed',
+                    ],
+                    shouldNotGroupWhenFull: false
+                  },
+                  editorConfig: {
+                    height: 500, // Set the desired height in pixels
+                  },
+                  alignment: {
+                    options: ['left', 'center', 'right', 'justify'],
+                  },
+
+                  extraPlugins: [uploadPlugin]            // 업로드 플러그인
+                }}
+                data=""         // ⭐ 기존 컨텐츠 내용 입력 (HTML)
+                onReady={editor => {
+                  // You can store the "editor" and use when it is needed.
+                  console.log('Editor is ready to use!', editor);
+                }}
+                onChange={(event, editor) => {
+                  const data = editor.getData();
+                  console.log({ event, editor, data });
+                  setContent(data);
+                }}
+                onBlur={(event, editor) => {
+                  console.log('Blur.', editor);
+                }}
+                onFocus={(event, editor) => {
+                  console.log('Focus.', editor);
+                }}
+              />
+              {/* <textarea cols="40" rows="10"
                         value={content}
                         className={styles['form-input']}
-                        onChange={handleChangeContent}></textarea>
+                        onChange={handleChangeContent}></textarea> */}
             </td>
           </tr>
           <tr>
             <td>파일</td>
             <td>
-              <input type="file" multiple onChange={handleChangeFile}/>
+              <input type="file" multiple onChange={handleChangeFile} />
             </td>
           </tr>
         </tbody>
       </table>
       <div className="btn-box">
         <Link to="/boards" className='btn'>목록</Link>
-        <button className='btn' onClick={ onSubmit }>등록</button>
+        <button className='btn' onClick={onSubmit}>등록</button>
       </div>
     </div>
   )

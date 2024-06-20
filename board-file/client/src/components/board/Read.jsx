@@ -2,13 +2,17 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styles from '../board/css/read.module.css'
 import '../board/css/read.css'
+import * as format from '../../apis/format'
+// ckeditor5
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
-const Read = ({ no, board, fileList, isLoading , onDownload}) => {
+const Read = ({ no, board, fileList, isLoading, onDownload }) => {
 
   const handleDownload = (no, fileName) => {
 
     // 중간 처리는 하기 위함  
-    onDownload(no,fileName)
+    onDownload(no, fileName)
   }
 
   return (
@@ -30,29 +34,29 @@ const Read = ({ no, board, fileList, isLoading , onDownload}) => {
               <tr>
                 <td>번호</td>
                 <td>
-                  <input type="text" value={no} readOnly 
-                  className={styles['form-input']}/>
+                  <input type="text" value={no} readOnly
+                    className={styles['form-input']} />
                 </td>
               </tr>
               <tr>
                 <td>등록일자</td>
                 <td>
-                  <input type="text" name="" id="" value={board.regDate} readOnly 
-                  className={styles['form-input']}/>
+                  <input type="text" name="" id="" value={board.regDate} readOnly
+                    className={styles['form-input']} />
                 </td>
               </tr>
               <tr>
                 <td>제목</td>
                 <td>
-                  <input type="text" name="" id="" value={board.title} readOnly 
-                  className={styles['form-input']}/>
+                  <input type="text" name="" id="" value={board.title} readOnly
+                    className={styles['form-input']} />
                 </td>
               </tr>
               <tr>
                 <td>작성자</td>
                 <td>
-                  <input type="text" value={board.writer} readOnly 
-                  className={styles['form-input']}/>
+                  <input type="text" value={board.writer} readOnly
+                    className={styles['form-input']} />
                 </td>
               </tr>
               <tr>
@@ -60,8 +64,13 @@ const Read = ({ no, board, fileList, isLoading , onDownload}) => {
               </tr>
               <tr>
                 <td colSpan={2}>
-                  <textarea name="" id="" cols="40" rows="10" value={board.content} readOnly
-                  className={styles['form-input']}></textarea>
+                  <CKEditor editor={ClassicEditor}
+                    data={board.content}           // 조회할 데이터 커텐츠 
+                    disabled={true}
+                    config={{
+                      toolbar: [],
+                    }}
+                  />
                 </td>
               </tr>
               <tr>
@@ -72,15 +81,16 @@ const Read = ({ no, board, fileList, isLoading , onDownload}) => {
                   {fileList.map((file) => (
                     <div className="flex-box" key={file.no}>
                       <div className="item">
-                        <span>{file.fileName}</span>
+                        <img src={`/files/img/${file.no}`} alt={file.fileName} />
+                        <span>{file.fileName} ({format.byteToUnit(file.fileSize)})</span>
                       </div>
 
                       <div className="item">
-                        <button className='btn' 
-                          onClick={ () => handleDownload(file.no, file.originName)}>다운로드</button>
+                        <button className='btn'
+                          onClick={() => handleDownload(file.no, file.originName)}>다운로드</button>
                       </div>
                     </div>
-                    ))
+                  ))
                   }
                 </td>
               </tr>
